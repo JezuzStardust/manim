@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+
+"Checks if you are running livestreaming. If not it runs the proper main file in manimlib. "
 import manimlib
 
 if __name__ == "__main__":
