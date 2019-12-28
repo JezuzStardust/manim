@@ -9,6 +9,8 @@ import manimlib.constants
 
 
 def parse_cli():
+    """Parses user input from the terminal.
+    Returns: a Namespace object with all the parsed commands and filenames."""
     try:
         parser = argparse.ArgumentParser()
         module_location = parser.add_mutually_exclusive_group()
@@ -164,6 +166,7 @@ def parse_cli():
 
 
 def get_module(file_name):
+    """ Seems to check if the input is a file or just Python Manim commands.        Probably a convenience feature."""
     if file_name == "-":
         module = types.ModuleType("input_scenes")
         code = "from manimlib.imports import *\n\n" + sys.stdin.read()
