@@ -1,4 +1,9 @@
 #!/usr/bin/env python
+"Main file: Parses the terminal input and stores in arg. 
+Adjusts configuration. 
+Creates required folders.
+Extracts the correct scene. 
+If live stream, it starts the live stream."
 import manimlib.config
 import manimlib.constants
 import manimlib.extract_scene
