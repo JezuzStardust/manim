@@ -28,3 +28,5 @@ primes.py
 /media_dir.txt
 tags
 /venv/*
+.swp
+/.vim/*
