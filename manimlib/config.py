@@ -9,21 +9,31 @@ import manimlib.constants
 
 
 def parse_cli():
-    """Parses user input from the terminal.
-    Returns: a Namespace object with all the parsed commands and filenames."""
+    """
+    Parses the user input from the terminal using the built-int argparse. 
+    Returns args: a Namespace object with all the parsed commands and filenames.
+    """
     try:
         parser = argparse.ArgumentParser()
+        # Only one of the options in module_location can be present.
         module_location = parser.add_mutually_exclusive_group()
+        # Positional argument. Stores path to file with scenes.
+        # nargs="?": argument consumed if possible and produced as a single item. 
+        # This is because this is not used when livestream is in use. 
+        # Note that using - as filename, we can follow it up with code. 
         module_location.add_argument(
             "file",
             nargs="?",
             help="path to file holding the python code for the scene",
         )
+        # Positional argument. Stores name(s) of scenes to render.
+        # nargs="*": all arguments are gathered into a list. 
         parser.add_argument(
             "scene_names",
             nargs="*",
             help="Name of the Scene class you want to see",
         )
+        # Optional argument flag. Stores True if present else False.
         parser.add_argument(
             "-p", "--preview",
             action="store_true",
@@ -84,11 +94,13 @@ def parse_cli():
             action="store_true",
             help="Write all the scenes from a file",
         ),
+        # Argument requires a path to where to store the output.
         parser.add_argument(
             "-o", "--file_name",
             help="Specify the name of the output file, if"
                  "it should be different from the scene class name",
         )
+        # Arguemnt requires input number or e.g. '3,6'.
         parser.add_argument(
             "-n", "--start_at_animation_number",
             help="Start rendering not from the first animation, but"
@@ -96,29 +108,35 @@ def parse_cli():
                  "in two comma separated values, e.g. \"3,6\", it will end"
                  "the rendering at the second value",
         )
+        # Argument with input. 
         parser.add_argument(
             "-r", "--resolution",
             help="Resolution, passed as \"height,width\"",
         )
+        # Argument with input.
         parser.add_argument(
             "-c", "--color",
             help="Background color",
         )
+        # Flag
         parser.add_argument(
             "--sound",
             action="store_true",
             help="Play a success/failure sound",
         )
+        # Flag
         parser.add_argument(
             "--leave_progress_bars",
             action="store_true",
             help="Leave progress bars displayed in terminal",
         )
+        # Argument with input.
         parser.add_argument(
             "--media_dir",
             help="directory to write media",
         )
         video_group = parser.add_mutually_exclusive_group()
+        # Only one of the two below can be given.
         video_group.add_argument(
             "--video_dir",
             help="directory to write file tree for video",
@@ -133,6 +151,7 @@ def parse_cli():
         )
 
         # For live streaming
+        # Cannot include --livestream if filename is given. 
         module_location.add_argument(
             "--livestream",
             action="store_true",
@@ -162,24 +181,45 @@ def parse_cli():
         return args
     except argparse.ArgumentError as err:
         print(str(err))
-        sys.exit(2)
+        sys.exit(2) # Exit code 2 is used for syntax error. 
 
 
 def get_module(file_name):
-    """ Seems to check if the input is a file or just Python Manim commands.        Probably a convenience feature."""
+    """
+    Checks if input file is given. 
+    If no input file is given, then it instead gets the input from 
+    the input line. Probably for quick testing of functions.  
+    Both alternatives returns a module object. 
+    """
     if file_name == "-":
-        module = types.ModuleType("input_scenes")
+        # Create a module on the fly with the code 
+        # with the code from the input line. 
+        # Peobably for quick tests. 
+        # Creates a module object to use its dictionary later. 
+        # Not sure yet how this is used. I might be wrong. (???) 
+        module = types.ModuleType("input_scenes") 
         code = "from manimlib.imports import *\n\n" + sys.stdin.read()
         try:
+            # The code is executed.
+            # The namespace of this code (e.g. where all variables are stored)
+            # is module.__dict__. 
+            # This means that module is used just as it were a regular 
+            # module imported and from which code were ran. 
+            # The module is then returned. 
             exec(code, module.__dict__)
             return module
         except Exception as e:
             print(f"Failed to render scene: {str(e)}")
             sys.exit(2)
     else:
+        # Replace e.g. 'jens/input.py' with 'jens.input' 
         module_name = file_name.replace(os.sep, ".").replace(".py", "")
+        # A spec is a Namespace that contains import-related information 
+        # used to load a module. 
         spec = importlib.util.spec_from_file_location(module_name, file_name)
+        # Create a new module based on spec and spec.loader.create_module
         module = importlib.util.module_from_spec(spec)
+        # A spec object has a loader object. 
         spec.loader.exec_module(module)
         return module
 
